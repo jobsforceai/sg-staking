@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { RedeemForm } from "./RedeemForm";
 
 const SGCHAIN_URL = "https://sgchain.sgxmeta.ai/";
 
@@ -87,6 +88,7 @@ export default function Home() {
           <span className="brand-name">SAGENEX <b>STAKING</b></span>
         </a>
         <div className="nav-links">
+          <a href="#redeem">Redeem</a>
           <a href="#how-it-works">How it works</a>
           <a href="#why-sgc">Why SGC</a>
           <a href="#safety">Safety</a>
@@ -102,7 +104,7 @@ export default function Home() {
           <h1>Three paths.<br/><em>One clear journey.</em></h1>
           <p className="hero-lead">Choose the route that matches where your funds are today—from Sagenex, through an assisted offline deposit, or directly on SGChain.</p>
           <div className="hero-actions">
-            <a className="button button-primary" href="#how-it-works">See the workflow <ArrowIcon /></a>
+            <a className="button button-primary" href="#redeem">Redeem coupon <ArrowIcon /></a>
             <a className="text-link" href={SGCHAIN_URL} target="_blank" rel="noreferrer">Go directly to SGChain <span>↗</span></a>
           </div>
           <div className="trust-row">
@@ -134,6 +136,8 @@ export default function Home() {
           <div className="status-pill status-two"><span><Icon name="spark" /></span><div><small>Order status</small><b>Confirmed</b></div></div>
         </div>
       </section>
+
+      <RedeemForm />
 
       <section className="workflow-section" id="how-it-works">
         <div className="shell">
