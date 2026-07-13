@@ -247,7 +247,12 @@ app.post('/api/crypto-deposits', upload.array('proofFiles', 3), async (req, res,
 
 app.post('/api/internal/crypto-deposits/:depositId/approve', async (req, res, next) => {
   try {
-    if (req.headers['x-internal-secret'] !== process.env.SGSTAKING_INTERNAL_SECRET) {
+    const stakingSecret = process.env.SGSTAKING_INTERNAL_SECRET;
+    if (!stakingSecret) {
+      throw Object.assign(new Error('SGSTAKING_INTERNAL_SECRET_NOT_CONFIGURED'), { statusCode: 500 });
+    }
+
+    if (req.headers['x-internal-secret'] !== stakingSecret) {
       throw Object.assign(new Error('UNAUTHORIZED'), { statusCode: 401 });
     }
 
