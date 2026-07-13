@@ -1,0 +1,21 @@
+app/page.tsx
+  s_4f55b0ff778b23::t_7930ef8779ba79 3,131
+app/SgcPriceCard.tsx
+  s_4f55b0ff778b23::t_7930ef8779ba79 1-24
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.12",
+  "base_commit_sha": "91907b7b5783b2639f73c35f35645a7b2ab47860",
+  "prompts": {},
+  "sessions": {
+    "s_4f55b0ff778b23": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f3614-5eb4-7552-aeff-0bc61f8f088f",
+        "model": "gpt-5.5"
+      },
+      "human_author": "jobsforceai <jobsforceai@gmail.com>"
+    }
+  }
+}
