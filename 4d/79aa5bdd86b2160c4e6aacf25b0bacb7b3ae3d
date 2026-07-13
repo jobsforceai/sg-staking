@@ -1,0 +1,21 @@
+backend/src/server.js
+  s_4f55b0ff778b23::t_1707669bb23732 100,104
+app/RedeemForm.tsx
+  s_4f55b0ff778b23::t_1707669bb23732 57,71
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.12",
+  "base_commit_sha": "4d79aa5bdd86b2160c4e6aacf25b0bacb7b3ae3d",
+  "prompts": {},
+  "sessions": {
+    "s_4f55b0ff778b23": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f3614-5eb4-7552-aeff-0bc61f8f088f",
+        "model": "gpt-5.5"
+      },
+      "human_author": "jobsforceai <jobsforceai@gmail.com>"
+    }
+  }
+}
