@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { CryptoDepositForm } from "./CryptoDepositForm";
 import { RedeemForm } from "./RedeemForm";
 import { SgcPriceCard } from "./SgcPriceCard";
 
@@ -90,6 +91,7 @@ export default function Home() {
         </a>
         <div className="nav-links">
           <a href="#redeem">Redeem</a>
+          <a href="#crypto-deposit">Crypto Deposit</a>
           <a href="#how-it-works">How it works</a>
           <a href="#why-sgc">Why SGC</a>
           <a href="#safety">Safety</a>
@@ -135,6 +137,7 @@ export default function Home() {
       </section>
 
       <RedeemForm />
+      <CryptoDepositForm />
 
       <section className="workflow-section" id="how-it-works">
         <div className="shell">
