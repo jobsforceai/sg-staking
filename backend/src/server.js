@@ -97,11 +97,11 @@ const createPurchaseCode = async ({ source, externalCode, amountUsd, amountSgc, 
 };
 
 const redeemSourceCoupon = async (source, code) => {
-  if (source === 'SAGENEX') {
+  if (source === 'SAGENEX' || source === 'OFFLINE') {
     const data = await jsonPost(
       `${process.env.SAGENEX_API_URL}/internal/sgchain/execute-transfer`,
       { 'X-Internal-Auth': `Bearer ${process.env.SAGENEX_INTERNAL_SECRET}` },
-      { transferCode: code }
+      { transferCode: code, source }
     );
     if (data.status !== 'SUCCESS' || !data.transferredAmountUsd) {
       throw Object.assign(new Error(data.error || 'SAGENEX_COUPON_REDEEM_FAILED'), { statusCode: 400 });
@@ -110,22 +110,6 @@ const redeemSourceCoupon = async (source, code) => {
       amountUsd: Number(data.transferredAmountUsd),
       sourceCurrency: 'USD',
       sourceMeta: { sagenexUserId: data.sagenexUserId },
-    };
-  }
-
-  if (source === 'SGTRADING') {
-    const data = await jsonPost(
-      `${process.env.SGTRADING_API_URL}/internal/sgchain/verify-burn`,
-      { Authorization: `Bearer ${process.env.SGTRADING_INTERNAL_SECRET}` },
-      { code }
-    );
-    if (data.status !== 'SUCCESS' || !data.amountUsd) {
-      throw Object.assign(new Error(data.error || 'SGTRADING_COUPON_REDEEM_FAILED'), { statusCode: 400 });
-    }
-    return {
-      amountUsd: Number(data.amountUsd),
-      sourceCurrency: 'USD',
-      sourceMeta: { sgTradingUserId: data.sgTradingUserId },
     };
   }
 

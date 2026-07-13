@@ -54,7 +54,7 @@ export function RedeemForm() {
         <span className="kicker">REDEEM COUPON</span>
         <h2>Get your SGX card coupon code.</h2>
         <p>
-          Enter your details and redeem a coupon from SGChain, Sagenex, or SGTrading. The issued coupon is shown only once on this screen.
+          Enter your details and redeem a coupon from SGChain, Sagenex, or an offline Sagenex admin coupon. The issued coupon is shown only once on this screen.
         </p>
       </div>
 
@@ -68,7 +68,7 @@ export function RedeemForm() {
           <select value={source} onChange={(event) => setSource(event.target.value)}>
             <option value="SGCHAIN">SGChain coupon</option>
             <option value="SAGENEX">Sagenex coupon</option>
-            <option value="SGTRADING">SGTrading coupon</option>
+            <option value="OFFLINE">Offline coupon</option>
           </select>
         </label>
 
