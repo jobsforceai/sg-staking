@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { RedeemForm } from "./RedeemForm";
+import { SgcPriceCard } from "./SgcPriceCard";
 
 const SGCHAIN_URL = "https://sgchain.sgxmeta.ai/";
 
@@ -127,11 +128,7 @@ export default function Home() {
               priority
             />
           </div>
-          <div className="wallet-card">
-            <div className="wallet-top"><span>SGC balance</span><span className="live-dot">LIVE</span></div>
-            <strong>2,450.00 <small>SGC</small></strong>
-            <div className="wallet-bottom"><span>Available in wallet</span><b>Ready</b></div>
-          </div>
+          <SgcPriceCard />
           <div className="status-pill status-one"><span><Icon name="shield" /></span><div><small>Account</small><b>Verified</b></div></div>
           <div className="status-pill status-two"><span><Icon name="spark" /></span><div><small>Order status</small><b>Confirmed</b></div></div>
         </div>
