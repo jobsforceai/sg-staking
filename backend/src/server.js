@@ -67,14 +67,18 @@ const normalizeBuyerDetails = (body) => {
   const fullName = String(body.fullName || '').trim();
   const phoneNumber = String(body.phoneNumber || '').trim();
   const userId = String(body.userId || '').trim();
+  const email = String(body.email || '').trim().toLowerCase();
 
   if (!fullName) throw Object.assign(new Error('NAME_REQUIRED'), { statusCode: 400 });
   if (!phoneNumber) throw Object.assign(new Error('PHONE_REQUIRED'), { statusCode: 400 });
   if (fullName.length > 120) throw Object.assign(new Error('NAME_TOO_LONG'), { statusCode: 400 });
   if (phoneNumber.length > 30) throw Object.assign(new Error('PHONE_TOO_LONG'), { statusCode: 400 });
   if (userId.length > 120) throw Object.assign(new Error('USER_ID_TOO_LONG'), { statusCode: 400 });
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    throw Object.assign(new Error('INVALID_EMAIL'), { statusCode: 400 });
+  }
 
-  return { fullName, phoneNumber, userId: userId || null };
+  return { fullName, phoneNumber, userId: userId || null, email: email || null };
 };
 
 const normalizeEmail = (email) => {
@@ -259,6 +263,7 @@ app.post('/api/internal/crypto-deposits/:depositId/approve', async (req, res, ne
     const depositId = String(req.params.depositId || '').trim();
     const approvedAmountUsd = Number(req.body.approvedAmountUsd || 0);
     const coin = String(req.body.coin || '').toUpperCase();
+    const buyerDetails = normalizeBuyerDetails(req.body.buyerDetails || {});
     if (!depositId) throw Object.assign(new Error('DEPOSIT_ID_REQUIRED'), { statusCode: 400 });
     if (!approvedAmountUsd || approvedAmountUsd <= 0) throw Object.assign(new Error('INVALID_APPROVED_AMOUNT'), { statusCode: 400 });
     if (!['ETH', 'USDT'].includes(coin)) throw Object.assign(new Error('INVALID_COIN'), { statusCode: 400 });
@@ -275,7 +280,7 @@ app.post('/api/internal/crypto-deposits/:depositId/approve', async (req, res, ne
         approvedBy: req.body.approvedBy,
         txHash: req.body.txHash,
       },
-      buyerDetails: req.body.buyerDetails || {},
+      buyerDetails,
     });
 
     res.status(201).json({
