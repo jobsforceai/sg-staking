@@ -1,0 +1,31 @@
+backend/SAGENEX_CRYPTO_DEPOSIT_REQUIREMENTS.md
+  s_4f55b0ff778b23::t_263d3c2c7525c7 1-122
+backend/src/server.js
+  s_4f55b0ff778b23::t_263d3c2c7525c7 6,13-19,80-87,199-287,297-299
+.gitignore
+  s_4f55b0ff778b23::t_481460fdb40d66 5
+app/page.tsx
+  s_4f55b0ff778b23::t_263d3c2c7525c7 2,94,140
+app/CryptoDepositForm.tsx
+  s_4f55b0ff778b23::t_263d3c2c7525c7 1-88
+app/globals.css
+  s_4f55b0ff778b23::t_263d3c2c7525c7 119,124-132,148,151
+backend/package.json
+  s_4f55b0ff778b23::t_e742b73e7cd926 13-14
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.12",
+  "base_commit_sha": "f49c662f56801200734bef8040e295100e7a6721",
+  "prompts": {},
+  "sessions": {
+    "s_4f55b0ff778b23": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f3614-5eb4-7552-aeff-0bc61f8f088f",
+        "model": "gpt-5.5"
+      },
+      "human_author": "jobsforceai <jobsforceai@gmail.com>"
+    }
+  }
+}
