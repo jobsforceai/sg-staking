@@ -18,11 +18,12 @@ export function CryptoDepositForm({ token }: { token: string }) {
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const formElement = event.currentTarget;
     setMessage("");
     setError("");
     setLoading(true);
     try {
-      const form = new FormData(event.currentTarget);
+      const form = new FormData(formElement);
       const files = form.getAll("proofFiles").filter((file) => file instanceof File && file.size > 0) as File[];
       const allowed = ["image/jpeg", "image/png", "image/webp", "application/pdf"];
       if (!files.length) throw new Error("PROOF_REQUIRED");
@@ -31,7 +32,7 @@ export function CryptoDepositForm({ token }: { token: string }) {
       if (files.some((file) => !allowed.includes(file.type))) throw new Error("Only JPG, PNG, WEBP, and PDF files are accepted.");
       await apiRequest("/api/crypto-deposits", { method: "POST", body: form }, token);
       setMessage("Deposit proof submitted. It is now pending administrator review.");
-      event.currentTarget.reset();
+      formElement.reset();
       setCoin("USDT");
     } catch (err) {
       setError(friendlyError(err));
