@@ -8,6 +8,7 @@ import path from 'path';
 import { promisify } from 'util';
 
 const app = express();
+const build = 'staking-auth-dashboard-f5a7594';
 const port = Number(process.env.PORT || 8010);
 const host = process.env.HOST || '127.0.0.1';
 const dataDir = path.resolve(process.env.DATA_DIR || path.join(process.cwd(), 'data'));
@@ -262,7 +263,7 @@ const redeemSourceCoupon = async (source, code) => {
 };
 
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok' });
+  res.json({ status: 'ok', build });
 });
 
 app.get('/api/sgc/price', async (req, res, next) => {
@@ -491,5 +492,5 @@ app.use((error, req, res, next) => {
 });
 
 app.listen(port, host, () => {
-  console.log(`SG coin staking backend listening on http://${host}:${port}`);
+  console.log(`SG coin staking backend ${build} listening on http://${host}:${port}`);
 });
