@@ -82,8 +82,8 @@ HTTP status can be `400` for invalid/reused/expired codes and `500` for unexpect
 
 After Sagenex returns `SUCCESS`, staking will:
 
-1. Create an internal staking purchase code.
-2. Store the purchase amount in USD.
+1. Create a locked stake for the logged-in SG Staking user.
+2. Store the purchase amount in USD and calculated SGC.
 3. Reject future attempts to redeem the same external Sagenex code.
 
-No wallet login is required on the staking side for this flow.
+SG Staking login is required before this flow.

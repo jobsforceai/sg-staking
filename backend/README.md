@@ -15,14 +15,65 @@ npm run dev
 ```http
 GET /health
 GET /api/sgc/price
+POST /api/auth/signup
+POST /api/auth/login
+GET /api/me/dashboard
 POST /api/coupons/redeem
-POST /api/purchase-codes/redeem
+POST /api/crypto-deposits
+POST /api/withdrawals
 ```
 
-## Redeem Source Coupon
+## Auth
+
+```http
+POST /api/auth/signup
+Content-Type: application/json
+```
+
+```json
+{
+  "fullName": "User Name",
+  "phoneNumber": "9999999999",
+  "email": "user@example.com",
+  "password": "password123"
+}
+```
+
+Login uses:
+
+```http
+POST /api/auth/login
+```
+
+```json
+{
+  "email": "user@example.com",
+  "password": "password123"
+}
+```
+
+Both return:
+
+```json
+{
+  "status": "SUCCESS",
+  "token": "bearer-token",
+  "user": {
+    "id": "user-id",
+    "fullName": "User Name",
+    "phoneNumber": "9999999999",
+    "email": "user@example.com"
+  }
+}
+```
+
+Use `Authorization: Bearer <token>` for dashboard, staking, deposit proof, and withdrawal routes.
+
+## Redeem Source Coupon As Stake
 
 ```http
 POST /api/coupons/redeem
+Authorization: Bearer <token>
 Content-Type: application/json
 ```
 
@@ -33,18 +84,56 @@ Content-Type: application/json
 }
 ```
 
-`source` can be `SAGENEX`, `SGTRADING`, or `SGCHAIN`.
+`source` can be `SAGENEX`, `OFFLINE`, or `SGCHAIN`.
 
 Success:
 
 ```json
 {
   "status": "SUCCESS",
-  "purchaseCode": "SGSTAKE-...",
+  "stakeId": "stake-id",
   "amountUsd": 100,
   "amountSgc": 0.54,
-  "sourceCurrency": "USD"
+  "sourceCurrency": "USD",
+  "dashboard": {}
 }
 ```
 
-`POST /api/purchase-codes/redeem` is intentionally a placeholder until the final destination backend is confirmed.
+No purchase code is generated anymore. The approved amount is added directly to the logged-in user's dashboard as locked stake.
+
+## Dashboard
+
+```http
+GET /api/me/dashboard
+Authorization: Bearer <token>
+```
+
+Returns locked stake, accrued 30-day interest, withdrawable interest, allowed withdrawal methods, stakes, and withdrawals.
+
+Interest policy:
+
+```txt
+3% every 30 days
+principal is locked
+only accrued interest is withdrawable
+offline/cash stake can withdraw only cash
+online/crypto stake can withdraw USDT or cash
+```
+
+## Withdraw Interest
+
+```http
+POST /api/withdrawals
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+```json
+{
+  "method": "USDT",
+  "amountUsd": 10,
+  "walletAddress": "0x..."
+}
+```
+
+`method` can be `USDT` or `CASH`. The backend rejects withdrawals above available accrued interest.
