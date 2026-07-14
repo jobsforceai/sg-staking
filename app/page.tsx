@@ -1,7 +1,16 @@
 import Image from "next/image";
+import { MotionEffects } from "./MotionEffects";
 import { SgcPriceCard } from "./SgcPriceCard";
 
 const SGCHAIN_URL = "https://sgchain.sgxmeta.ai/";
+
+const journey = [
+  ["01", "Activate", "Redeem a valid coupon or submit a supported crypto deposit."],
+  ["02", "Verify", "Coupon stakes activate directly; deposit proofs enter administrator review."],
+  ["03", "Accrue", "Your dashboard tracks interest through each 30-day cycle."],
+  ["04", "Request", "Choose an eligible cash or USDT interest-withdrawal route."],
+  ["05", "Review", "Follow the request from pending review to its final status."],
+];
 
 const routes = [
   {
@@ -80,6 +89,7 @@ function ArrowIcon() {
 export default function Home() {
   return (
     <main>
+      <MotionEffects />
       <nav className="nav shell" aria-label="Main navigation">
         <a className="brand" href="#top" aria-label="Sagenex home">
           <span className="brand-mark">
@@ -133,15 +143,31 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="journey-section" id="journey">
+        <div className="shell">
+          <div className="section-heading landing-heading">
+            <div><span className="kicker">AFTER YOU JOIN</span><h2>One position.<br/>Every step visible.</h2></div>
+            <p>From activation through an eligible interest withdrawal, your Sagenex Staking account keeps the full journey in one clear timeline.</p>
+          </div>
+          <div className="journey-track">
+            <div className="journey-line" aria-hidden="true" />
+            {journey.map(([number, title, copy]) => (
+              <article className="journey-step" key={number}>
+                <span>{number}</span><h3>{title}</h3><p>{copy}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="workflow-section" id="how-it-works">
         <div className="shell">
           <div className="section-heading">
-            <div><span className="kicker">CHOOSE YOUR ENTRY POINT</span><h2>Three routes, mapped end to end.</h2></div>
-            <p>Each path shows who acts, what gets verified, and exactly where the handoff occurs. Status labels reflect what is implemented in the current repositories.</p>
+            <div><span className="kicker">CHOOSE YOUR ENTRY POINT</span><h2>Pick the route that fits.</h2></div>
+            <p>Start with where your funds are today. Each route follows four clear actions from entry to confirmation.</p>
           </div>
 
           <div className="route-map">
-            <div className="route-rail" aria-hidden="true"><span /><span /><span /></div>
             {routes.map((route) => (
               <article className={`route-card route-${route.id}`} key={route.id}>
                 <header className="route-head">
@@ -177,6 +203,73 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="dashboard-preview-section">
+        <div className="shell dashboard-preview-grid">
+          <div className="preview-copy">
+            <span className="kicker">YOUR MEMBER DASHBOARD</span>
+            <h2>Clarity after every activation.</h2>
+            <p>See your staked value, SGC position, accrued interest, eligible withdrawal balance, and review history without switching between systems.</p>
+            <ul>
+              <li><span>✓</span> Live totals returned by your authenticated account</li>
+              <li><span>✓</span> Cash and USDT availability shown separately</li>
+              <li><span>✓</span> Stake and withdrawal status history</li>
+            </ul>
+            <a className="button button-primary" href="/signup">Create an account <ArrowIcon /></a>
+          </div>
+          <div className="dashboard-mock" aria-label="Illustration of the Sagenex Staking dashboard">
+            <div className="mock-top"><div><span className="mock-logo">S</span><b>Portfolio overview</b></div><span className="mock-live">LIVE ACCOUNT DATA</span></div>
+            <div className="mock-metrics">
+              <div className="mock-primary"><small>TOTAL STAKED</small><strong>$—</strong><span>— SGC</span><em>Principal locked</em></div>
+              <div><small>INTEREST ACCRUED</small><strong>$—</strong><span>Updated by cycle</span></div>
+              <div><small>WITHDRAWABLE</small><strong>$—</strong><span>Eligible interest only</span></div>
+            </div>
+            <div className="mock-history">
+              <div className="mock-history-head"><b>Recent activity</b><small>ILLUSTRATIVE STATUS PREVIEW</small></div>
+              <div><span className="mock-source">SG</span><p><b>Coupon stake</b><small>SGChain · Stake activation</small></p><em className="mock-status active">Active</em></div>
+              <div><span className="mock-source crypto">₮</span><p><b>Crypto deposit</b><small>USDT · Proof submitted</small></p><em className="mock-status pending">Pending review</em></div>
+              <div><span className="mock-source cash">₹</span><p><b>Interest withdrawal</b><small>Cash · Administrator review</small></p><em className="mock-status approved">Approved</em></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="policy-section">
+        <div className="shell policy-grid">
+          <div className="policy-statement"><span className="kicker">INTEREST POLICY</span><h2><span>3%</span> every<br/>30 days.</h2><p>Simple policy visibility inside your dashboard. Actual account values and eligibility are returned by the staking backend.</p></div>
+          <div className="policy-rules">
+            <article><span>01</span><div><h3>Principal stays locked</h3><p>Your original staked principal is not available for withdrawal.</p></div></article>
+            <article><span>02</span><div><h3>Interest is tracked separately</h3><p>Accrued, locked, and currently withdrawable interest appear as separate totals.</p></div></article>
+            <article><span>03</span><div><h3>Eligibility comes first</h3><p>Available methods depend on the source of the stake and current account eligibility.</p></div></article>
+            <article><span>04</span><div><h3>Every payout is reviewed</h3><p>Withdrawal requests remain pending until the administrator completes the review.</p></div></article>
+          </div>
+        </div>
+      </section>
+
+      <section className="withdrawal-section">
+        <div className="shell">
+          <div className="section-heading landing-heading">
+            <div><span className="kicker">ELIGIBLE INTEREST WITHDRAWALS</span><h2>Two routes.<br/>One review trail.</h2></div>
+            <p>The dashboard calculates what is available for each method. Users can never request more than their eligible interest balance.</p>
+          </div>
+          <div className="withdrawal-cards">
+            <article><div className="withdrawal-symbol">₹</div><small>OFFLINE ROUTE</small><h3>Cash withdrawal</h3><p>Request eligible interest as cash. This is the only route available to offline or cash-origin stakes.</p><div><span>Submit amount</span><b>→</b><span>Admin review</span><b>→</b><span>Status update</span></div></article>
+            <article><div className="withdrawal-symbol">₮</div><small>ONLINE ROUTE</small><h3>USDT withdrawal</h3><p>Eligible online or crypto-derived interest may be requested to a supplied USDT wallet address.</p><div><span>Add wallet</span><b>→</b><span>Admin review</span><b>→</b><span>Status update</span></div></article>
+          </div>
+        </div>
+      </section>
+
+      <section className="trust-process-section">
+        <div className="shell trust-process-grid">
+          <div><span className="kicker">BUILT AROUND VERIFICATION</span><h2>Nothing important disappears into a black box.</h2></div>
+          <ol>
+            <li><span>01</span><p><b>Authenticated account</b>Your staking activity belongs to your signed-in profile.</p></li>
+            <li><span>02</span><p><b>Proof verification</b>Crypto payment files are checked before activation.</p></li>
+            <li><span>03</span><p><b>Recorded activation</b>Every approved position appears in stake history.</p></li>
+            <li><span>04</span><p><b>Withdrawal review</b>Every request keeps a visible status and decision trail.</p></li>
+          </ol>
+        </div>
+      </section>
+
       <section className="why-section shell" id="why-sgc">
         <div className="why-intro">
           <span className="kicker">BUILT FOR UTILITY</span>
@@ -188,6 +281,13 @@ export default function Home() {
           <article><span><Icon name="spark" /></span><h3>Designed for utility</h3><p>Built to move across SGChain products as the ecosystem expands.</p></article>
           <article><span><Icon name="shield" /></span><h3>Clear ownership</h3><p>Your confirmed SGC balance is shown directly inside your wallet.</p></article>
           <article><span><Icon name="coin" /></span><h3>Simple entry</h3><p>A guided order journey makes buying approachable for new users.</p></article>
+        </div>
+      </section>
+
+      <section className="final-cta-section">
+        <div className="shell final-cta-inner">
+          <div><span className="kicker">SAGENEX STAKING</span><h2>Your SGCOIN position,<br/><em>clearly tracked.</em></h2></div>
+          <div><p>Create your member account to activate stakes, monitor cycles, and manage eligible interest withdrawals.</p><div><a className="button final-primary" href="/signup">Create staking account <ArrowIcon /></a><a className="final-link" href="/login">Sign in to dashboard ↗</a></div></div>
         </div>
       </section>
 

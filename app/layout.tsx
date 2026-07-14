@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { LanguageManager } from "./LanguageManager";
 
 export const metadata: Metadata = {
   title: "Sagenex Staking | SGCOIN Member Portal",
@@ -12,8 +13,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full antialiased">
-      <body className="min-h-full flex flex-col">{children}</body>
+    <html lang="ar-AE" dir="rtl" className="h-full antialiased">
+      <body className="min-h-full flex flex-col">{children}<LanguageManager /></body>
     </html>
   );
 }
