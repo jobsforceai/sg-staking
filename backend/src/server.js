@@ -8,7 +8,7 @@ import path from 'path';
 import { promisify } from 'util';
 
 const app = express();
-const build = 'staking-auth-dashboard-f5a7594';
+const build = 'staking-withdrawal-review-cf5d30b';
 const port = Number(process.env.PORT || 8010);
 const host = process.env.HOST || '127.0.0.1';
 const dataDir = path.resolve(process.env.DATA_DIR || path.join(process.cwd(), 'data'));
@@ -463,20 +463,71 @@ app.post('/api/withdrawals', requireAuth(async (req, res) => {
     throw Object.assign(new Error('INSUFFICIENT_WITHDRAWABLE_INTEREST'), { statusCode: 400 });
   }
 
-  const withdrawals = await readJson('withdrawals.json');
   const withdrawal = {
     id: crypto.randomUUID(),
     userId: req.user.id,
     method,
     amountUsd,
     walletAddress: method === 'USDT' ? walletAddress : null,
-    status: 'REQUESTED',
+    status: 'PENDING_REVIEW',
     createdAt: new Date().toISOString(),
   };
+
+  const data = await jsonPost(
+    `${process.env.SAGENEX_API_URL}/admin/sg-staking/withdrawals`,
+    { 'X-Internal-Auth': `Bearer ${process.env.SAGENEX_INTERNAL_SECRET}` },
+    {
+      withdrawalId: withdrawal.id,
+      user: publicUser(req.user),
+      method,
+      amountUsd,
+      walletAddress: withdrawal.walletAddress,
+    }
+  );
+
+  const withdrawals = await readJson('withdrawals.json');
+  withdrawal.sagenexReviewId = data.withdrawalReviewId || null;
   withdrawals.push(withdrawal);
   await writeJson('withdrawals.json', withdrawals);
-  res.status(201).json({ status: 'REQUESTED', withdrawal, dashboard: await dashboardForUser(req.user.id) });
+  res.status(201).json({ status: 'PENDING_REVIEW', withdrawal, dashboard: await dashboardForUser(req.user.id) });
 }));
+
+const updateWithdrawalFromSagenex = async (req, status) => {
+  const stakingSecret = process.env.SGSTAKING_INTERNAL_SECRET;
+  if (!stakingSecret) throw Object.assign(new Error('SGSTAKING_INTERNAL_SECRET_NOT_CONFIGURED'), { statusCode: 500 });
+  if (req.headers['x-internal-secret'] !== stakingSecret) throw Object.assign(new Error('UNAUTHORIZED'), { statusCode: 401 });
+
+  const withdrawals = await readJson('withdrawals.json');
+  const withdrawal = withdrawals.find((item) => item.id === String(req.params.withdrawalId || '').trim());
+  if (!withdrawal) throw Object.assign(new Error('WITHDRAWAL_NOT_FOUND'), { statusCode: 404 });
+  if (withdrawal.status !== 'PENDING_REVIEW') throw Object.assign(new Error('WITHDRAWAL_ALREADY_REVIEWED'), { statusCode: 409 });
+
+  withdrawal.status = status;
+  withdrawal.reviewedAt = new Date().toISOString();
+  withdrawal.reviewedBy = req.body.reviewedBy || req.body.approvedBy || req.body.rejectedBy || null;
+  withdrawal.transactionRef = req.body.transactionRef || null;
+  withdrawal.rejectionReason = status === 'REJECTED' ? String(req.body.reason || '').trim() || null : null;
+  await writeJson('withdrawals.json', withdrawals);
+  return withdrawal;
+};
+
+app.post('/api/internal/withdrawals/:withdrawalId/approve', async (req, res, next) => {
+  try {
+    const withdrawal = await updateWithdrawalFromSagenex(req, 'APPROVED');
+    res.json({ status: 'SUCCESS', withdrawal });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post('/api/internal/withdrawals/:withdrawalId/reject', async (req, res, next) => {
+  try {
+    const withdrawal = await updateWithdrawalFromSagenex(req, 'REJECTED');
+    res.json({ status: 'SUCCESS', withdrawal });
+  } catch (error) {
+    next(error);
+  }
+});
 
 app.post('/api/purchase-codes/redeem', (req, res) => {
   res.status(410).json({ message: 'Purchase codes are no longer used. Login and stake directly.' });

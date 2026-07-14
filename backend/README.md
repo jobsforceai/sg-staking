@@ -137,3 +137,23 @@ Content-Type: application/json
 ```
 
 `method` can be `USDT` or `CASH`. The backend rejects withdrawals above available accrued interest.
+
+Success creates a Sagenex admin review:
+
+```json
+{
+  "status": "PENDING_REVIEW",
+  "withdrawal": {
+    "id": "withdrawal-id",
+    "status": "PENDING_REVIEW"
+  }
+}
+```
+
+Sagenex must approve or reject using:
+
+```http
+POST /api/internal/withdrawals/:withdrawalId/approve
+POST /api/internal/withdrawals/:withdrawalId/reject
+x-internal-secret: <SGSTAKING_INTERNAL_SECRET>
+```
