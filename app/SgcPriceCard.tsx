@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-const API_URL = process.env.NEXT_PUBLIC_STAKING_API_URL || "http://127.0.0.1:8010";
+const API_URL = process.env.NEXT_PUBLIC_STAKING_API_URL || "https://sg-staking-backend.onrender.com";
 
 export function SgcPriceCard() {
   const [price, setPrice] = useState<number | null>(null);

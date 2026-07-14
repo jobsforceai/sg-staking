@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Sagenex Staking | SGCOIN Routes",
-  description: "Sagenex Staking maps every supported route from Sagenex, offline assistance, or SGChain to the SGCOIN ecosystem.",
+  title: "Sagenex Staking | SGCOIN Member Portal",
+  description: "Activate SGCOIN stakes, submit crypto deposits, track interest, and request eligible withdrawals from your Sagenex Staking dashboard.",
 };
 
 export default function RootLayout({
