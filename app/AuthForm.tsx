@@ -65,6 +65,7 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
           )}
           <label>Email address<input name="email" required type="email" autoComplete="email" placeholder="you@example.com" /></label>
           <label>Password<input name="password" required type="password" minLength={8} autoComplete={signup ? "new-password" : "current-password"} placeholder="At least 8 characters" /></label>
+          {!signup && <p className="auth-switch"><Link href="/forgot-password">Forgot password?</Link></p>}
           {error && <p className="form-error" role="alert">{error}</p>}
           <button className="button button-primary auth-submit" type="submit" disabled={loading}>{loading ? "Please wait…" : signup ? "Create account" : "Sign in"}<span>→</span></button>
           <p className="auth-switch">{signup ? "Already have an account?" : "New to Sagenex Staking?"} <Link href={signup ? "/login" : "/signup"}>{signup ? "Sign in" : "Create account"}</Link></p>

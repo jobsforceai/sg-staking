@@ -5,6 +5,7 @@ import express from 'express';
 import { mkdir, readFile, writeFile } from 'fs/promises';
 import multer from 'multer';
 import { MongoClient } from 'mongodb';
+import nodemailer from 'nodemailer';
 import path from 'path';
 import { promisify } from 'util';
 
@@ -14,6 +15,7 @@ const port = Number(process.env.PORT || 8010);
 const host = process.env.HOST || '127.0.0.1';
 const dataDir = path.resolve(process.env.DATA_DIR || path.join(process.cwd(), 'data'));
 const mongoDbName = process.env.MONGODB_DB_NAME || 'sg_staking';
+const publicAppUrl = process.env.PUBLIC_APP_URL || 'https://staking.sgxmeta.ai';
 const depositAddress = '0xBdbefFa8cf5469E3BBB2c21eA4f9BF3D4Ed63142';
 const allowedProofTypes = new Set(['image/jpeg', 'image/png', 'image/webp', 'application/pdf']);
 const upload = multer({
@@ -83,6 +85,25 @@ const writeJson = async (name, rows) => {
 };
 
 const hashCode = (code) => crypto.createHash('sha256').update(code).digest('hex');
+
+const sendMail = async ({ to, subject, text }) => {
+  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    console.warn(`SMTP not configured. Password reset email not sent to ${to}.`);
+    return;
+  }
+  const transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT || 587),
+    secure: Number(process.env.SMTP_PORT || 587) === 465,
+    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+  });
+  await transporter.sendMail({
+    from: process.env.EMAIL_FROM || process.env.SMTP_USER,
+    to,
+    subject,
+    text,
+  });
+};
 
 const jsonPost = async (url, headers, body) => {
   const response = await fetch(url, {
@@ -346,6 +367,63 @@ app.post('/api/auth/login', async (req, res, next) => {
       throw Object.assign(new Error('INVALID_LOGIN'), { statusCode: 401 });
     }
     res.json({ status: 'SUCCESS', token: await createSession(user.id), user: publicUser(user) });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post('/api/auth/forgot-password', async (req, res, next) => {
+  try {
+    const email = normalizeEmail(req.body.email);
+    const users = await readJson('users.json');
+    const user = users.find((item) => item.email === email);
+
+    if (user) {
+      const token = crypto.randomBytes(32).toString('hex');
+      const resetTokens = (await readJson('password-reset-tokens.json')).filter(
+        (item) => item.userId !== user.id && new Date(item.expiresAt).getTime() > Date.now()
+      );
+      resetTokens.push({
+        id: crypto.randomUUID(),
+        userId: user.id,
+        tokenHash: hashCode(token),
+        createdAt: new Date().toISOString(),
+        expiresAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+      });
+      await writeJson('password-reset-tokens.json', resetTokens);
+      const link = `${publicAppUrl.replace(/\/$/, '')}/reset-password?token=${token}`;
+      await sendMail({
+        to: user.email,
+        subject: 'Reset your SG Staking password',
+        text: `Use this link to reset your SG Staking password. This link expires in 1 hour.\n\n${link}`,
+      });
+    }
+
+    res.json({ status: 'SUCCESS' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post('/api/auth/reset-password', async (req, res, next) => {
+  try {
+    const token = String(req.body.token || '').trim();
+    const passwordHash = await hashPassword(normalizePassword(req.body.password));
+    if (!token) throw Object.assign(new Error('RESET_TOKEN_REQUIRED'), { statusCode: 400 });
+
+    const resetTokens = await readJson('password-reset-tokens.json');
+    const tokenHash = hashCode(token);
+    const resetToken = resetTokens.find((item) => item.tokenHash === tokenHash && new Date(item.expiresAt).getTime() > Date.now());
+    if (!resetToken) throw Object.assign(new Error('RESET_TOKEN_INVALID_OR_EXPIRED'), { statusCode: 400 });
+
+    const users = await readJson('users.json');
+    const user = users.find((item) => item.id === resetToken.userId);
+    if (!user) throw Object.assign(new Error('RESET_TOKEN_INVALID_OR_EXPIRED'), { statusCode: 400 });
+
+    user.passwordHash = passwordHash;
+    await writeJson('users.json', users);
+    await writeJson('password-reset-tokens.json', resetTokens.filter((item) => item.userId !== user.id));
+    res.json({ status: 'SUCCESS' });
   } catch (error) {
     next(error);
   }
