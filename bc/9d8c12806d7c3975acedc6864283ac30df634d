@@ -1,0 +1,19 @@
+backend/src/server.js
+  s_4f55b0ff778b23::t_6bafcd447ea7ca 101-121,126
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "bc9d8c12806d7c3975acedc6864283ac30df634d",
+  "prompts": {},
+  "sessions": {
+    "s_4f55b0ff778b23": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f3614-5eb4-7552-aeff-0bc61f8f088f",
+        "model": "gpt-5.5"
+      },
+      "human_author": "jobsforceai <jobsforceai@gmail.com>"
+    }
+  }
+}
