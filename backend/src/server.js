@@ -4,14 +4,16 @@ import crypto from 'crypto';
 import express from 'express';
 import { mkdir, readFile, writeFile } from 'fs/promises';
 import multer from 'multer';
+import { MongoClient } from 'mongodb';
 import path from 'path';
 import { promisify } from 'util';
 
 const app = express();
-const build = 'staking-withdrawal-review-cf5d30b';
+const build = 'staking-mongo-storage';
 const port = Number(process.env.PORT || 8010);
 const host = process.env.HOST || '127.0.0.1';
 const dataDir = path.resolve(process.env.DATA_DIR || path.join(process.cwd(), 'data'));
+const mongoDbName = process.env.MONGODB_DB_NAME || 'sg_staking';
 const depositAddress = '0xBdbefFa8cf5469E3BBB2c21eA4f9BF3D4Ed63142';
 const allowedProofTypes = new Set(['image/jpeg', 'image/png', 'image/webp', 'application/pdf']);
 const upload = multer({
@@ -27,10 +29,13 @@ const interestRatePerCycle = 0.03;
 app.use(cors());
 app.use(express.json());
 
-// ponytail: JSON files are fine for current low-volume launch; move to DB before multi-instance writes.
+let mongoClient;
+let mongoDb;
 const dataFile = (name) => path.join(dataDir, name);
+const collectionName = (name) => name.replace(/\.json$/, '');
+const withoutMongoId = ({ _id, ...row }) => row;
 
-const readJson = async (name) => {
+const readJsonFile = async (name) => {
   try {
     return JSON.parse(await readFile(dataFile(name), 'utf8'));
   } catch (error) {
@@ -39,7 +44,40 @@ const readJson = async (name) => {
   }
 };
 
+const connectDataStore = async () => {
+  if (!process.env.MONGODB_URI) return;
+  mongoClient = new MongoClient(process.env.MONGODB_URI);
+  await mongoClient.connect();
+  mongoDb = mongoClient.db(mongoDbName);
+  await mongoDb.collection('users').createIndex({ email: 1 }, { unique: true });
+};
+
+const migrateJsonToMongo = async () => {
+  if (!mongoDb) return;
+  for (const name of ['users.json', 'sessions.json', 'stakes.json', 'withdrawals.json', 'pending-crypto-deposits.json']) {
+    const rows = await readJsonFile(name);
+    if (!rows.length) continue;
+    const collection = mongoDb.collection(collectionName(name));
+    if (await collection.estimatedDocumentCount()) continue;
+    await collection.insertMany(rows.map(withoutMongoId));
+    console.log(`Migrated ${rows.length} ${name} rows to MongoDB.`);
+  }
+};
+
+const readJson = async (name) => {
+  if (mongoDb) {
+    return mongoDb.collection(collectionName(name)).find({}, { projection: { _id: 0 } }).toArray();
+  }
+  return readJsonFile(name);
+};
+
 const writeJson = async (name, rows) => {
+  if (mongoDb) {
+    const collection = mongoDb.collection(collectionName(name));
+    await collection.deleteMany({});
+    if (rows.length) await collection.insertMany(rows.map(withoutMongoId));
+    return;
+  }
   await mkdir(dataDir, { recursive: true });
   await writeFile(dataFile(name), JSON.stringify(rows, null, 2));
 };
@@ -157,6 +195,12 @@ const publicUser = (user) => ({
   email: user.email,
   createdAt: user.createdAt,
 });
+
+const requireInternalSecret = (req) => {
+  const stakingSecret = process.env.SGSTAKING_INTERNAL_SECRET;
+  if (!stakingSecret) throw Object.assign(new Error('SGSTAKING_INTERNAL_SECRET_NOT_CONFIGURED'), { statusCode: 500 });
+  if (req.headers['x-internal-secret'] !== stakingSecret) throw Object.assign(new Error('UNAUTHORIZED'), { statusCode: 401 });
+};
 
 const stakeWithdrawalMethods = (source) => (source === 'OFFLINE' ? ['CASH'] : ['USDT', 'CASH']);
 
@@ -311,6 +355,16 @@ app.get('/api/me/dashboard', requireAuth(async (req, res) => {
   res.json({ user: publicUser(req.user), dashboard: await dashboardForUser(req.user.id) });
 }));
 
+app.get('/api/internal/users', async (req, res, next) => {
+  try {
+    requireInternalSecret(req);
+    const users = await readJson('users.json');
+    res.json({ users: users.map(publicUser) });
+  } catch (error) {
+    next(error);
+  }
+});
+
 app.post('/api/coupons/redeem', requireAuth(async (req, res) => {
   const source = String(req.body.source || '').toUpperCase();
   const code = String(req.body.code || '').trim();
@@ -402,9 +456,7 @@ app.post('/api/crypto-deposits', requireAuth(async (req, res, next) => {
 
 app.post('/api/internal/crypto-deposits/:depositId/approve', async (req, res, next) => {
   try {
-    const stakingSecret = process.env.SGSTAKING_INTERNAL_SECRET;
-    if (!stakingSecret) throw Object.assign(new Error('SGSTAKING_INTERNAL_SECRET_NOT_CONFIGURED'), { statusCode: 500 });
-    if (req.headers['x-internal-secret'] !== stakingSecret) throw Object.assign(new Error('UNAUTHORIZED'), { statusCode: 401 });
+    requireInternalSecret(req);
 
     const depositId = String(req.params.depositId || '').trim();
     const approvedAmountUsd = Number(req.body.approvedAmountUsd || 0);
@@ -493,9 +545,7 @@ app.post('/api/withdrawals', requireAuth(async (req, res) => {
 }));
 
 const updateWithdrawalFromSagenex = async (req, status) => {
-  const stakingSecret = process.env.SGSTAKING_INTERNAL_SECRET;
-  if (!stakingSecret) throw Object.assign(new Error('SGSTAKING_INTERNAL_SECRET_NOT_CONFIGURED'), { statusCode: 500 });
-  if (req.headers['x-internal-secret'] !== stakingSecret) throw Object.assign(new Error('UNAUTHORIZED'), { statusCode: 401 });
+  requireInternalSecret(req);
 
   const withdrawals = await readJson('withdrawals.json');
   const withdrawal = withdrawals.find((item) => item.id === String(req.params.withdrawalId || '').trim());
@@ -542,6 +592,15 @@ app.use((error, req, res, next) => {
   res.status(error.statusCode || 500).json({ message: error.message || 'INTERNAL_SERVER_ERROR' });
 });
 
-app.listen(port, host, () => {
-  console.log(`SG coin staking backend ${build} listening on http://${host}:${port}`);
+const start = async () => {
+  await connectDataStore();
+  await migrateJsonToMongo();
+  app.listen(port, host, () => {
+    console.log(`SG coin staking backend ${build} listening on http://${host}:${port}`);
+  });
+};
+
+start().catch((error) => {
+  console.error(error);
+  process.exit(1);
 });
