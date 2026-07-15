@@ -98,10 +98,32 @@ const sendMail = async ({ to, subject, text }) => {
     user: process.env.SMTP_USER === 'apikey' ? 'apikey' : 'configured',
     from: process.env.EMAIL_FROM || process.env.SMTP_USER,
   };
+  if (process.env.SMTP_HOST === 'smtp.sendgrid.net' && process.env.SMTP_USER === 'apikey') {
+    console.log('SENDGRID_API_SEND_ATTEMPT', smtpLabel);
+    const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${process.env.SMTP_PASS}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        personalizations: [{ to: [{ email: to }] }],
+        from: { email: smtpLabel.from },
+        subject,
+        content: [{ type: 'text/plain', value: text }],
+      }),
+    });
+    if (!response.ok) {
+      throw new Error(`SENDGRID_API_FAILED ${response.status} ${await response.text()}`);
+    }
+    console.log('SENDGRID_API_SEND_SUCCESS', smtpLabel);
+    return;
+  }
   const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
     port,
     secure: port === 465,
+    connectionTimeout: 10000,
     auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
   });
   console.log('SMTP_SEND_ATTEMPT', smtpLabel);
