@@ -148,7 +148,7 @@ export function DashboardClient() {
           </article>
           <article className="panel history-panel">
             <div className="history-head"><div><small>PAYOUTS</small><h2>Withdrawal requests</h2></div><span>{dashboard.withdrawals.length} total</span></div>
-            {dashboard.withdrawals.length ? <div className="withdrawal-list">{dashboard.withdrawals.map((withdrawal) => <div key={withdrawal.id}><span className="withdrawal-method">{withdrawal.method === "USDT" ? "₮" : "₹"}</span><div><b>{money(withdrawal.amountUsd)}</b><small>{withdrawal.method} · {new Date(withdrawal.createdAt).toLocaleDateString("en-IN")}</small>{withdrawal.rejectionReason && <em>{withdrawal.rejectionReason}</em>}</div><Status value={withdrawal.status} /></div>)}</div> : <div className="empty-state"><span>↗</span><b>No withdrawal requests</b><p>Eligible interest requests will appear here.</p></div>}
+            {dashboard.withdrawals.length ? <div className="withdrawal-list">{dashboard.withdrawals.map((withdrawal) => <div key={withdrawal.id}><span className="withdrawal-method">{withdrawal.method === "USDT" ? "₮" : "$"}</span><div><b>{money(withdrawal.amountUsd)}</b><small>{withdrawal.method} · {new Date(withdrawal.createdAt).toLocaleDateString("en-IN")}</small>{withdrawal.rejectionReason && <em>{withdrawal.rejectionReason}</em>}</div><Status value={withdrawal.status} /></div>)}</div> : <div className="empty-state"><span>↗</span><b>No withdrawal requests</b><p>Eligible interest requests will appear here.</p></div>}
           </article>
         </section>
 
