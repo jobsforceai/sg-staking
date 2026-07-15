@@ -91,18 +91,27 @@ const sendMail = async ({ to, subject, text }) => {
     console.warn(`SMTP not configured. Password reset email not sent to ${to}.`);
     return;
   }
+  const port = Number(process.env.SMTP_PORT || 587);
+  const smtpLabel = {
+    host: process.env.SMTP_HOST,
+    port,
+    user: process.env.SMTP_USER === 'apikey' ? 'apikey' : 'configured',
+    from: process.env.EMAIL_FROM || process.env.SMTP_USER,
+  };
   const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT || 587),
-    secure: Number(process.env.SMTP_PORT || 587) === 465,
+    port,
+    secure: port === 465,
     auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
   });
-  await transporter.sendMail({
+  console.log('SMTP_SEND_ATTEMPT', smtpLabel);
+  const info = await transporter.sendMail({
     from: process.env.EMAIL_FROM || process.env.SMTP_USER,
     to,
     subject,
     text,
   });
+  console.log('SMTP_SEND_SUCCESS', { ...smtpLabel, messageId: info.messageId });
 };
 
 const jsonPost = async (url, headers, body) => {
