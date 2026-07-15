@@ -227,7 +227,7 @@ export default function Home() {
               <div className="mock-history-head"><b>Recent activity</b><small>ILLUSTRATIVE STATUS PREVIEW</small></div>
               <div><span className="mock-source">SG</span><p><b>Coupon stake</b><small>SGChain · Stake activation</small></p><em className="mock-status active">Active</em></div>
               <div><span className="mock-source crypto">₮</span><p><b>Crypto deposit</b><small>USDT · Proof submitted</small></p><em className="mock-status pending">Pending review</em></div>
-              <div><span className="mock-source cash">₹</span><p><b>Interest withdrawal</b><small>Cash · Administrator review</small></p><em className="mock-status approved">Approved</em></div>
+              <div><span className="mock-source cash">$</span><p><b>Interest withdrawal</b><small>Cash · Administrator review</small></p><em className="mock-status approved">Approved</em></div>
             </div>
           </div>
         </div>
@@ -252,7 +252,7 @@ export default function Home() {
             <p>The dashboard calculates what is available for each method. Users can never request more than their eligible interest balance.</p>
           </div>
           <div className="withdrawal-cards">
-            <article><div className="withdrawal-symbol">₹</div><small>OFFLINE ROUTE</small><h3>Cash withdrawal</h3><p>Request eligible interest as cash. This is the only route available to offline or cash-origin stakes.</p><div><span>Submit amount</span><b>→</b><span>Admin review</span><b>→</b><span>Status update</span></div></article>
+            <article><div className="withdrawal-symbol">$</div><small>OFFLINE ROUTE</small><h3>Cash withdrawal</h3><p>Request eligible interest as cash. This is the only route available to offline or cash-origin stakes.</p><div><span>Submit amount</span><b>→</b><span>Admin review</span><b>→</b><span>Status update</span></div></article>
             <article><div className="withdrawal-symbol">₮</div><small>ONLINE ROUTE</small><h3>USDT withdrawal</h3><p>Eligible online or crypto-derived interest may be requested to a supplied USDT wallet address.</p><div><span>Add wallet</span><b>→</b><span>Admin review</span><b>→</b><span>Status update</span></div></article>
           </div>
         </div>
