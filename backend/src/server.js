@@ -307,7 +307,7 @@ const redeemSourceCoupon = async (source, code) => {
 };
 
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', build });
+  res.json({ status: 'ok', build, storage: mongoDb ? 'mongodb' : 'json' });
 });
 
 app.get('/api/sgc/price', async (req, res, next) => {
