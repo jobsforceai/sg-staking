@@ -392,11 +392,11 @@ app.post('/api/auth/forgot-password', async (req, res, next) => {
       });
       await writeJson('password-reset-tokens.json', resetTokens);
       const link = `${publicAppUrl.replace(/\/$/, '')}/reset-password?token=${token}`;
-      await sendMail({
+      sendMail({
         to: user.email,
         subject: 'Reset your SG Staking password',
         text: `Use this link to reset your SG Staking password. This link expires in 1 hour.\n\n${link}`,
-      });
+      }).catch((error) => console.error('PASSWORD_RESET_EMAIL_FAILED', error));
     }
 
     res.json({ status: 'SUCCESS' });
